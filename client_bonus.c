@@ -1,0 +1,75 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   client_bonus.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: liperman <liperman@student.42.rio>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/08/25 21:33:01 by liperman          #+#    #+#             */
+/*   Updated: 2022/09/27 11:05:56 by liperman         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include "libft/libft.h"
+
+void	handler(int signal)
+{
+	if (signal == SIGUSR1)
+		write(1, "server message received\n", 24);
+}
+
+void	ft_signal(unsigned char *binary, int pid)
+{
+	int	i;
+
+	i = 0;
+	while (binary[i] != '\0')
+	{
+		if (binary[i] == '1')
+			kill(pid, SIGUSR1);
+		if (binary[i] == '0')
+			kill(pid, SIGUSR2);
+		i++;
+		usleep(250);
+	}
+}
+
+void	ft_atob(unsigned char character, int pid)
+{
+	unsigned char	*binary;
+	size_t			i;
+
+	i = 8;
+	binary = malloc(9);
+	while (i)
+	{
+		binary[--i] = (character % 2) + 48;
+		character = character / 2;
+	}
+	binary[8] = '\0';
+	ft_signal(binary, pid);
+	free(binary);
+}
+
+int	main(int argc, char *argv[])
+{
+	int	i;
+	int	pid;
+
+	signal(SIGUSR1, handler);
+	if (argc != 3)
+		return (0);
+	pid = ft_atoi(argv[1]);
+	i = 0;
+	while (argv[2][i] != '\0')
+	{
+		ft_atob(argv[2][i], pid);
+		i++;
+	}
+	ft_atob(argv[2][i], pid);
+	return (0);
+}
